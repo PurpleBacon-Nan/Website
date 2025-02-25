@@ -1,0 +1,163 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+
+<style>
+    hr.dashed {
+        border: 0;
+        border-top: 3px dashed #ccc;
+        margin: 30px 0;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        margin-top: 10px;
+    }
+
+    .content-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .transactions {
+        width: 50%;
+        text-align: right;
+    }
+
+    .main-content {
+        width: 50%;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    li {
+        background: #f4f4f4;
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 5px;
+    }
+</style>
+
+
+<div class = content-container>
+    <div class="main-content">
+        <h1>Fishes List for Space: {{ space.id }}</h1>
+
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <a href="{% url 'FishList' %}"
+                style="padding: 20px 40px; font-size: 20px; background-color: #333; color: white; border: none; border-radius: 10px; text-decoration: none;">
+                All Spaces
+            </a>
+            {% for space in spaces %}
+                <a href="{% url 'FishListBySpace' space.id %}"
+                    style="padding: 20px 40px; font-size: 20px; background-color: #007bff; color: white; border: none; border-radius: 10px; text-decoration: none;">
+                    {{ space.name }}
+                </a>
+            {% endfor %}
+            </div>
+
+        <h2>Fish Stock {% if space %} for {{ space.name }} {% else %} (All Spaces) {% endif %}</h2>
+        <ul>
+            {% for fish in fishes %}
+                <li>{{ fish.name }}: {{ fish.quantity }} units</li>
+            {% empty %}
+                <li>No fish available in this space.</li>
+            {% endfor %}
+        </ul>
+
+
+        <h2>Adding Units</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <h3>Add Units</h3>
+                <div class="form-group">
+                    <label for="id_fish">{{ add_form.fish.label }}</label>
+                    {{ add_form.fish }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_quantity">{{ add_form.quantity.label }}</label>
+                    {{ add_form.quantity }}
+                </div>
+
+                <button type="submit" name="add" class="btn btn-primary">Add Units</button>
+            </form>
+
+            <hr class="dashed">
+
+            <h2>Remove Units</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <h3>Remove Units</h3>
+                <div class="form-group">
+                    <label for="id_remove_fish">{{ remove_form.fish.label }}</label>
+                    {{ remove_form.fish }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_remove_quantity">{{ remove_form.quantity.label }}</label>
+                    {{ remove_form.quantity }}
+                </div>
+
+                <button type="submit" name="remove" class="btn btn-danger">Remove Units</button>
+            </form>
+
+            <hr class="dashed">
+
+            <h2>Adding New Fish</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <h3>Add Fish</h3>
+                <div class="form-group">
+                    {{ add_fish_form.as_p }}
+                </div>
+                <button type="submit" name="add_fish" class="btn btn-success">Add Fish</button>
+            </form>
+
+            <hr class="dashed">
+            <h2>Delete Fish</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <h3>Select Fish to Delete</h3>
+                <div class="form-group">
+                    <label for="{{ delete_fish_form.fish.id_for_label }}">{{ delete_fish_form.fish.label }}</label>
+                    {{ delete_fish_form.fish }}
+                    {% if delete_fish_form.fish.errors %}
+                        <div class="text-danger">
+                            {% for error in delete_fish_form.fish.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="submit" name="delete_fish" class="btn btn-danger">Delete Fish</button>
+            </form>
+
+
+
+    </div>
+
+
+
+    <div class="transactions">
+        <h2>Transaction Logs</h2>
+            <form method="POST" action="{% url 'clear_fish_log' %}">
+            {% csrf_token %}
+            <button type="submit">Clear All Fish Logs</button>
+                </form>
+        <ul>
+            {% for log in logs %}
+                <li>{{ log.timestamp }} - {{ log.action|capfirst }} {{ log.quantity }} units of {{ log.fish.name }}</li>
+            {% empty %}
+                <li>No transactions yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

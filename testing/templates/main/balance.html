@@ -1,0 +1,130 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<style>
+    .transactions {
+        width: 50%;
+        text-align: right;
+    }
+
+    .content-containers {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .MainContent {
+        width: 50%;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    li {
+        background: #f4f4f4;
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 5px;
+    }
+
+    hr.dashed {
+        border: 0;
+        border-top: 3px dashed #ccc;
+        margin: 30px 0;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        margin-top: 10px;
+    }
+
+
+
+
+</style>
+
+<div class = content-containers>
+    <div class="MainContent">
+
+        <ul>
+        {% if balance %}
+            <h2>Account Balance</h2>
+            <p>Your current balance is: <strong>{{ balance.balance }}</strong> CFA</p>
+        {% else %}
+            <p>No balance information available.</p>
+        {% endif %}
+        </ul>
+
+        <hr class="dashed">
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <h3>Add Money</h3>
+        <div>
+            <div class="form-group">
+            <label for="id_balance">{{ add_money_form.balance.label }}</label>
+            {{ add_money_form.balance }}
+                </div>
+
+        </div>
+
+        <div>
+            <div class="form-group">
+            <label for="id_amount">{{ add_money_form.amount.label }}</label>
+            {{ add_money_form.amount }}
+                </div>
+        </div>
+
+            <button type="submit" name="add_money">Add Money</button>
+        </form>
+
+        <hr class="dashed">
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <h3>Remove Money</h3>
+        <div>
+            <div class="form-group">
+            <label for="id_balance">{{ remove_money_form.balance.label }}</label>
+            {{ remove_money_form.balance }}
+                </div>
+        </div>
+
+        <div>
+            <div class="form-group">
+            <label for="id_amount">{{ remove_money_form.amount.label }}</label>
+            {{ remove_money_form.amount }}
+                </div>
+        </div>
+
+            <button type="submit" name="remove_money">Remove Money</button>
+        </form>
+
+        <hr class="dashed">
+    </div>
+
+
+        <div class="transactions">
+            <h2>Transaction Logs</h2>
+                <form method="POST" action="{% url 'clear_money_log' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning">Clear All Money Logs</button>
+                </form>
+            <ul>
+                {% for log in logs %}
+                    <li>{{ log.timestamp }} - {{ log.action|capfirst }} {{ log.amount }} CFA </li>
+                {% empty %}
+                    <li>No transactions yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+</div>
+
+
+{% endblock %}

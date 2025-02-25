@@ -1,0 +1,148 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<style type="text/css">
+    {% load static %}
+
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .hero {
+        position: relative;
+        height: 60vh;
+        background-image: url("{% static 'images/Logo.JPG' %}");
+        background-size: cover;
+        background-position: center;
+        text-align: center;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Times New Roman', sans-serif;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        background-blur: 5px;
+    }
+
+    .hero h1 {
+        font-size: 80px;
+        font-weight: 700;
+        text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.6);
+        animation: fadeIn 2s ease-out;
+    }
+
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .content-section {
+        padding: 60px 30px;
+        background-color: #f7f7f7;
+        color: #333;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        margin-top: -50px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .content-section h2 {
+        font-size: 36px;
+        color: #2C3E50;
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: 600;
+    }
+
+    .content-section ul {
+        list-style-type: none;
+        padding-left: 0;
+        font-size: 18px;
+    }
+
+    .content-section li {
+        margin-bottom: 15px;
+        line-height: 1.8;
+        padding-left: 25px;
+        position: relative;
+    }
+
+    .content-section li::before {
+        content: "\2022";
+        color: #3498db; /* Blue bullet point */
+        font-size: 30px;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    .content-section ul li:hover {
+        background-color: #ecf0f1;
+        border-radius: 5px;
+        padding-left: 30px;
+        transition: all 0.3s ease;
+    }
+
+    .content-section li strong {
+        color: #3498db;
+    }
+
+
+    @media (max-width: 768px) {
+        .hero h1 {
+            font-size: 50px;
+        }
+
+        .content-section h2 {
+            font-size: 28px;
+        }
+
+        .content-section li {
+            font-size: 16px;
+        }
+
+    }
+</style>
+
+<body class="{% block body_class %}about-us{% endblock %}">
+
+    <div class="hero">
+        <h1>About Us</h1>
+    </div>
+
+    <div class="content-section">
+        <h2>Cold Storage Features</h2>
+        <ul>
+            <li><strong>Controllable Temperature:</strong> We provide a variety of temperature zones to choose from, from cold storage to freezing, to meet the cold storage needs of different items.</li>
+            <li><strong>Advanced Equipment:</strong> We adopt international leading refrigeration equipment to ensure stable operation of the cold storage with minimal temperature fluctuation.</li>
+            <li><strong>Energy Saving and Environmental Protection:</strong> Using environmentally friendly refrigerants to reduce environmental impact while lowering energy costs.</li>
+            <li><strong>Safe and Reliable:</strong> Equipped with a perfect safety monitoring system, ensuring 24-hour uninterrupted monitoring to guarantee the safe operation of the cold storage.</li>
+        </ul>
+
+        <h2>Rental and Sales Business</h2>
+        <ul>
+            <li><strong>Cold Storage Rental:</strong> We provide flexible rental programs to meet different time and area requirements. Whether for short-term turnover or long-term storage, we offer tailored solutions.</li>
+            <li><strong>Cold Storage Sales:</strong> We also provide cold storage sales services. Our wide range of cold storage specifications can be customized to meet your specific needs.</li>
+        </ul>
+
+        <h2>Quality Service</h2>
+        <ul>
+            <li>We have a professional team to provide one-stop services, including consultation, design, installation, commissioning, and post-maintenance support.</li>
+            <li>Our team is happy to answer any questions you may have and provide you with attentive service throughout the process.</li>
+        </ul>
+
+
+    </div>
+
+{% endblock %}
+</body>
