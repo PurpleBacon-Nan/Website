@@ -36,6 +36,18 @@ DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = ['*']
 
+# --- Base44 sandbox preview only --------------------------------------------
+# In the sandbox the preview proxy terminates TLS and forwards the request with
+# the sandbox host, while the browser sends its own public Origin, so Django's
+# CSRF origin check rejects every form POST (login, register, add/remove stock).
+# Trust that public origin explicitly — computed from the environment, never
+# hardcoded — and only while the platform sets BASE44_PREVIEW_MODE to "1".
+# With the flag unset (or any other value) behaviour is unchanged.
+if os.environ.get("BASE44_PREVIEW_MODE") == "1":
+    _base44_host_suffix = os.environ.get("BASE44_PUBLIC_HOST_SUFFIX")
+    if _base44_host_suffix:
+        CSRF_TRUSTED_ORIGINS = [f"https://3000-{_base44_host_suffix}"]
+
 
 # Application definition
 
