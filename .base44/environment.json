@@ -1,0 +1,13 @@
+{
+  "previewPort": 3000,
+  "healthPath": "/",
+  "startCommand": "docker compose -f docker-compose.base44.yml up -d",
+  "secrets": [
+    {
+      "name": "SECRET_KEY",
+      "description": "Django SECRET_KEY. PP/settings.py reads it with django-environ and has no default, so the app cannot boot without it. Generate any long random string for production use.",
+      "requiredAtBoot": true,
+      "generatedForDevelopment": true
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+# Base44 dev environment — runs this project from the cloned source.
+#
+# The Django development server runs from the repo bind-mounted at /app, so
+# source edits hot-reload (Django's StatReloader polls file mtimes, which works
+# over bind mounts) and no image rebuild is needed.
+#
+#   docker compose -f docker-compose.base44.yml up -d --build
+#
+# Web entry point: http://localhost:3000/ (host port 3000).
+services:
+  web:
+    # Plain runtime base image + bind mount: never a prebuilt app image, so
+    # every edit is visible immediately.
+    image: python:3.12-slim
+    working_dir: /app
+    # Dependencies are installed into the image layer (not the bind mount), so
+    # they are synced from requirements.txt on each container start — a fast
+    # no-op once they are already satisfied — then migrations run and the
+    # development server starts.
+    command:
+      - sh
+      - -ec
+      - |
+        pip install --quiet --disable-pip-version-check --no-cache-dir -r requirements.txt
+        python manage.py migrate --noinput
+        exec python manage.py runserver 0.0.0.0:3000
+    ports:
+      - "3000:3000"
+    env_file:
+      # Dev placeholders (committed) …
+      - ./.env.base44-defaults
+      # … then platform-managed secrets, which always win.
+      - /run/base44/app.env
+    environment:
+      # Sandbox preview flag: with "1", PP/settings.py trusts the public preview
+      # origin for CSRF (the proxy forwards a different Host than the browser's
+      # Origin). Values come from the platform, never hardcoded here.
+      - BASE44_PREVIEW_MODE
+      - BASE44_PUBLIC_HOST_SUFFIX
+    volumes:
+      - .:/app
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          python -c "import sys,urllib.request;
+          sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:3000/', timeout=3).status == 200 else 1)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: on-failure
