@@ -5,7 +5,7 @@
   "secrets": [
     {
       "name": "SECRET_KEY",
-      "description": "Django SECRET_KEY. PP/settings.py reads it with django-environ and has no default, so the app cannot boot without it. Generate any long random string for production use.",
+      "description": "Django SECRET_KEY. PP/settings.py reads it with django-environ. The sandbox preview falls back to a built-in development key when it is absent, but a real deployment cannot boot without it. Generate any long random string for production use.",
       "requiredAtBoot": true,
       "generatedForDevelopment": true
     }

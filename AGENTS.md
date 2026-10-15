@@ -24,20 +24,19 @@ under `/static/`.
   the bind mount. Data written in the preview persists between sessions and is
   part of the working tree. `python manage.py migrate --noinput` runs on every
   container start (a no-op once applied). Never delete that file.
-- **`SECRET_KEY` is required at boot.** `PP/settings.py` reads it with
-  django-environ and gives it no default, so the app raises without it. It is
-  delivered from `/run/base44/app.env` (declared in `.base44/environment.json`);
-  a development placeholder was generated, so replace it with a real secret
-  before any real deployment. `.env.base44-defaults` holds only non-secret dev
-  defaults and is listed *before* `/run/base44/app.env` so real values win. A
-  generated placeholder does **not** carry over to a new environment — a fresh
-  sandbox starts with an empty `/run/base44/app.env`, so the first boot dies
-  with `django.core.exceptions.ImproperlyConfigured: Set the SECRET_KEY
-  environment variable` and the container restart-loops. That is an environment
-  gap, not a code bug: regenerate the development placeholder (listed in
-  `.base44/environment.json` as `requiredAtBoot`) and the platform recreates the
-  service with it. Never "fix" it by adding a key to `.env.base44-defaults` or
-  by giving `SECRET_KEY` a default in `PP/settings.py`.
+- **`SECRET_KEY`.** `PP/settings.py` reads it with django-environ. A real value
+  is delivered from `/run/base44/app.env` (declared in `.base44/environment.json`
+  as `requiredAtBoot`); the generated development placeholder there must be
+  replaced with a real secret before any real deployment.
+  In the **sandbox preview only** settings fall back to a built-in development
+  key when no `SECRET_KEY` has been delivered yet, so a fresh environment no
+  longer restart-loops with
+  `django.core.exceptions.ImproperlyConfigured: Set the SECRET_KEY environment
+  variable` (the failure that kept the preview from starting). The fallback is
+  gated on `BASE44_PREVIEW_MODE == "1"` — see the sandbox section below. With the
+  flag unset the app still refuses to start without `SECRET_KEY`, exactly as
+  before. `.env.base44-defaults` holds only non-secret dev defaults and is listed
+  *before* `/run/base44/app.env` so real values win.
 - **Django's default login URL is broken in this project** (pre-existing): the
   project maps `django.contrib.auth.urls` at `/` and `LOGIN_URL` is not set, so
   an anonymous visit to a `@login_required` page redirects to
@@ -48,7 +47,34 @@ under `/static/`.
   adding fish/spaces requires the page to be re-rendered (a normal POST does
   that). Nothing extra is needed in the sandbox.
 
-## Sandbox-only override (gated on `BASE44_PREVIEW_MODE`)
+## Sandbox-only overrides (gated on `BASE44_PREVIEW_MODE`)
+
+Both overrides below apply only while the platform sets
+`BASE44_PREVIEW_MODE == "1"` (it never appears in the repo's own defaults). With
+the flag unset or any other value, the settings behave exactly as before.
+
+### 1. `SECRET_KEY` fallback
+
+`SECRET_KEY` is read with `env("SECRET_KEY", default=None)`. When it is missing
+and the flag is `"1"`, settings use a built-in development key instead of
+raising:
+
+```python
+if os.environ.get("BASE44_PREVIEW_MODE") == "1":
+    SECRET_KEY = "base44-sandbox-preview-only-insecure-key"
+else:
+    raise ImproperlyConfigured("Set the SECRET_KEY environment variable")
+```
+
+Why: a fresh environment starts with an empty `/run/base44/app.env`, so the dev
+server died with `ImproperlyConfigured: Set the SECRET_KEY environment variable`
+and the container restart-looped — the preview never started. A delivered
+`SECRET_KEY` is read first and always wins, so the real value is never masked,
+and with the flag unset the original exception is raised unchanged (verified with
+`env -u SECRET_KEY python manage.py check`). This is a preview convenience only:
+never rely on it for a real deployment.
+
+### 2. CSRF trusted origin
 
 `PP/settings.py` appends the public preview origin to `CSRF_TRUSTED_ORIGINS`
 only when `BASE44_PREVIEW_MODE == "1"` **and** `BASE44_PUBLIC_HOST_SUFFIX` is

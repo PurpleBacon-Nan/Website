@@ -21,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 import environ
+from django.core.exceptions import ImproperlyConfigured
 
 env = environ.Env(
     DEBUG=(bool, False)
@@ -29,8 +30,21 @@ env = environ.Env(
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY", default=None)
 DEBUG = env.bool("DEBUG", default=False)
+
+if not SECRET_KEY:
+    # Sandbox preview only (see the Base44 block further down): the dev server
+    # must boot even when no SECRET_KEY has been delivered to
+    # /run/base44/app.env yet. Without this, a fresh environment died with
+    # "ImproperlyConfigured: Set the SECRET_KEY environment variable" and the
+    # preview never started. A real SECRET_KEY always wins — it is picked up
+    # above whenever it is set. With BASE44_PREVIEW_MODE unset this raises
+    # exactly as before.
+    if os.environ.get("BASE44_PREVIEW_MODE") == "1":
+        SECRET_KEY = "base44-sandbox-preview-only-insecure-key"
+    else:
+        raise ImproperlyConfigured("Set the SECRET_KEY environment variable")
 
 
 
