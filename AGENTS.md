@@ -28,17 +28,16 @@ under `/static/`.
   django-environ and gives it no default, so the app raises without it. It is
   delivered from `/run/base44/app.env` (declared in `.base44/environment.json`);
   a development placeholder was generated, so replace it with a real secret
-  before any real deployment.
-
-  A generated placeholder does **not** carry over to a new environment — a fresh
-  sandbox starts with an empty `/run/base44/app.env`, so the very first boot
-  dies with `django.core.exceptions.ImproperlyConfigured: Set the SECRET_KEY
+  before any real deployment. `.env.base44-defaults` holds only non-secret dev
+  defaults and is listed *before* `/run/base44/app.env` so real values win. A
+  generated placeholder does **not** carry over to a new environment — a fresh
+  sandbox starts with an empty `/run/base44/app.env`, so the first boot dies
+  with `django.core.exceptions.ImproperlyConfigured: Set the SECRET_KEY
   environment variable` and the container restart-loops. That is an environment
-  gap, not a code bug: regenerate the development placeholder (it is listed in
+  gap, not a code bug: regenerate the development placeholder (listed in
   `.base44/environment.json` as `requiredAtBoot`) and the platform recreates the
   service with it. Never "fix" it by adding a key to `.env.base44-defaults` or
-  by giving `SECRET_KEY` a default in `PP/settings.py`. `.env.base44-defaults` holds only non-secret dev
-  defaults and is listed *before* `/run/base44/app.env` so real values win.
+  by giving `SECRET_KEY` a default in `PP/settings.py`.
 - **Django's default login URL is broken in this project** (pre-existing): the
   project maps `django.contrib.auth.urls` at `/` and `LOGIN_URL` is not set, so
   an anonymous visit to a `@login_required` page redirects to
